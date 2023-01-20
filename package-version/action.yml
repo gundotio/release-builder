@@ -1,0 +1,29 @@
+name: Set package version
+
+inputs:
+  version:
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: jossef/action-set-json-field@v2
+      with:
+        file: package.json
+        field: version
+        value: ${{ inputs.version }}
+
+    - uses: jossef/action-set-json-field@v2
+      with:
+        file: package-lock.json
+        field: version
+        value: ${{ inputs.version }}
+
+    - uses: jossef/action-set-json-field@v2
+      with:
+        file: package-lock.json
+        field: packages..version
+        value: ${{ inputs.version }}
+
+    - run: echo >> package.json && echo >> package-lock.json
+      shell: bash

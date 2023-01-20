@@ -1,0 +1,44 @@
+name: Build changelog
+
+inputs:
+  release:
+    default: "patch"
+
+outputs:
+  has_prs:
+    value: ${{ steps.builder.outputs.categorized_prs || steps.builder.outputs.uncategorized_prs }}
+  previous_version:
+    value: ${{ steps.builder.outputs.fromTag }}
+  next_version:
+    value: ${{ steps.next.outputs.version }}
+  notes:
+    value: ${{ steps.process.outputs.changelog }}
+  release:
+    value: ${{ inputs.release }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v4
+
+    - run: pip install semver
+      shell: bash
+
+    - id: builder
+      uses: mikepenz/release-changelog-builder-action@v3
+      with:
+        configuration: ${{ github.action_path }}/config.json
+        outputFile: NEXT.md
+        toTag: HEAD
+
+    - id: process
+      run: |
+        echo 'changelog<<EOF' >> $GITHUB_OUTPUT
+        cat NEXT.md | python ${{ github.action_path }}/process_changelog.py >> $GITHUB_OUTPUT
+        echo 'EOF' >> $GITHUB_OUTPUT
+      shell: bash
+
+    - id: next
+      run: |
+        echo "version=$(python ${{ github.action_path }}/next_version.py ${{ steps.builder.outputs.fromTag }} ${{ inputs.release || 'patch' }})" >> $GITHUB_OUTPUT
+      shell: bash

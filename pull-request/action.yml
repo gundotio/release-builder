@@ -1,0 +1,45 @@
+name: Create pull request
+
+inputs:
+  next_version:
+    required: true
+  notes:
+    required: true
+  previous_version:
+    required: true
+  release:
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        echo -e "# Changelog\n" > NEXT.md
+        echo -e "All notable changes to this project will be documented in this file. See [standard-version](${{ github.server_url }}/conventional-changelog/standard-version) for commit guidelines.\n" >> NEXT.md
+        echo -e "${{ inputs.release == 'patch' && '###' || '##' }} [${{ inputs.next_version }}](${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.previous_version }}...v${{ inputs.next_version }}) ($(date +'%Y-%m-%d'))\n" >> NEXT.md
+        echo -e "${{ inputs.notes }}\n" >> NEXT.md
+        cat CHANGELOG.md | sed -e '1,4d' >> NEXT.md && mv NEXT.md CHANGELOG.md
+      shell: bash
+
+    - id: commit
+      uses: pr-mpt/actions-commit-hash@v2
+
+    - uses: peter-evans/create-pull-request@v4
+      with:
+        title: Release ${{ inputs.next_version }}
+        body: |
+          ## Release [${{ inputs.next_version }}](${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.previous_version }}...${{ steps.commit.outputs.short }})
+
+          ${{ inputs.notes }}
+
+          <details>
+            <summary>View source</summary>
+            <pre><code>${{ inputs.notes }}</code></pre>
+          </details>
+        author: GitHub <noreply@github.com>
+        base: master
+        branch: release
+        committer: GitHub <noreply@github.com>
+        commit-message: |
+          chore(release): ${{ inputs.next_version }}
+        delete-branch: true
