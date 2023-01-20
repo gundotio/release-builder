@@ -1,0 +1,49 @@
+name: Send slack message
+
+inputs:
+  channel-id:
+    required: true
+  message-id:
+    required: false
+  status:
+    default: "pending"
+
+outputs:
+  channel-id:
+    value: ${{ inputs.channel-id }}
+  message-id:
+    value: ${{ steps.send_message.outputs.ts }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v4
+
+    - run: pip install regex requests
+      shell: bash
+
+    - if: inputs.status == 'pending'
+      id: build_images
+      run: echo "message=$(python ${{ github.action_path }}/build_message.py)" >> $GITHUB_OUTPUT
+      shell: bash
+      env:
+        MESSAGE_TEMPLATE: images
+
+    - if: steps.build_images.outputs.message
+      uses: slackapi/slack-github-action@v1.23.0
+      with:
+        channel-id: ${{ inputs.channel-id }}
+        payload: ${{ steps.build_images.outputs.message }}
+
+    - id: build_message
+      run: echo "message=$(python ${{ github.action_path }}/build_message.py)" >> $GITHUB_OUTPUT
+      shell: bash
+      env:
+        DEPLOY_STATUS: ${{ inputs.status }}
+
+    - id: send_message
+      uses: slackapi/slack-github-action@v1.23.0
+      with:
+        channel-id: ${{ inputs.channel-id }}
+        payload: ${{ steps.build_message.outputs.message }}
+        update-ts: ${{ inputs.message-id }}
