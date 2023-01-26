@@ -39,7 +39,7 @@ runs:
       run: echo "message=$(python ${{ github.action_path }}/build_message.py)" >> $GITHUB_OUTPUT
       shell: bash
       env:
-        DEPLOY_STATUS: ${{ inputs.status }}
+        RELEASE_STATUS: ${{ inputs.status }}
 
     - id: send_message
       uses: slackapi/slack-github-action@v1.23.0

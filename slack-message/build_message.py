@@ -5,7 +5,6 @@ import regex
 import requests
 import sys
 
-DEPLOY_STATUS = os.environ.get("DEPLOY_STATUS", "pending")
 GITHUB_ACTOR = os.environ.get("GITHUB_ACTOR", "")
 GITHUB_ACTOR_URL = f"https://github.com/{GITHUB_ACTOR}"
 GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY", "")
@@ -15,7 +14,7 @@ GITHUB_RUN_STATUS_ICON = dict(
     failure=os.environ.get("RELEASE_FAILURE_ICON", "❌"),
     pending=os.environ.get("RELEASE_PENDING_ICON", "⏳"),
     success=os.environ.get("RELEASE_SUCCESS_ICON", "🚀"),
-).get(DEPLOY_STATUS, os.environ.get("RELEASE_ICON", "🚀"))
+).get(os.environ.get("RELEASE_STATUS", "pending"), os.environ.get("RELEASE_ICON", "🚀"))
 GITHUB_RUN_URL = f"{GITHUB_REPOSITORY_URL}/actions/runs/{GITHUB_RUN_ID}"
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 MESSAGE_TEMPLATE = os.environ.get("MESSAGE_TEMPLATE", "")
