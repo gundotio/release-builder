@@ -1,20 +1,16 @@
 name: Build changelog
 
-inputs:
-  release:
-    default: "patch"
-
 outputs:
   has_prs:
-    value: ${{ steps.builder.outputs.categorized_prs || steps.builder.outputs.uncategorized_prs }}
+    value: ${{ steps.build_changelog.outputs.categorized_prs || steps.build_changelog.outputs.uncategorized_prs }}
   previous_version:
-    value: ${{ steps.builder.outputs.fromTag }}
+    value: ${{ steps.build_changelog.outputs.fromTag }}
   next_version:
-    value: ${{ steps.next.outputs.version }}
+    value: ${{ steps.next_version.outputs.version }}
   notes:
-    value: ${{ steps.process.outputs.changelog }}
+    value: ${{ steps.process_changelog.outputs.changelog }}
   release:
-    value: ${{ inputs.release }}
+    value: ${{ steps.next_release.outputs.release }}
 
 runs:
   using: "composite"
@@ -24,21 +20,26 @@ runs:
     - run: pip install semver
       shell: bash
 
-    - id: builder
+    - id: build_changelog
       uses: mikepenz/release-changelog-builder-action@v3
       with:
         configuration: ${{ github.action_path }}/config.json
         outputFile: NEXT.md
         toTag: HEAD
 
-    - id: process
+    - id: process_changelog
       run: |
         echo 'changelog<<EOF' >> $GITHUB_OUTPUT
         cat NEXT.md | python ${{ github.action_path }}/process_changelog.py >> $GITHUB_OUTPUT
         echo 'EOF' >> $GITHUB_OUTPUT
       shell: bash
 
-    - id: next
+    - id: next_release
       run: |
-        echo "version=$(python ${{ github.action_path }}/next_version.py ${{ steps.builder.outputs.fromTag }} ${{ inputs.release || 'patch' }})" >> $GITHUB_OUTPUT
+        echo "release=$(python ${{ github.action_path }}/next_release.py)" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - id: next_version
+      run: |
+        echo "version=$(cat NEXT.md | python ${{ github.action_path }}/next_version.py ${{ steps.build_changelog.outputs.fromTag }} ${{ steps.next_release.outputs.release }})" >> $GITHUB_OUTPUT
       shell: bash
