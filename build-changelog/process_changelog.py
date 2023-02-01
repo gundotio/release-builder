@@ -15,17 +15,22 @@ for line in sys.stdin.readlines():
         lines.append((line.lstrip("- "), []))
         continue
 
-    title, pr = match.groups()
+    title = re.sub(r"\s+#?[\(\[]?(major|minor|patch)[\]\)]?", "", match.group(1))
+    number = match.group(2)
 
     if lines and title == lines[-1][0]:
-        lines[-1][1].append(pr)
+        lines[-1][1].append(number)
         continue
 
-    lines.append((title, [pr]))
+    lines.append((title, [number]))
 
-print(
-    "\n".join(
-        f"- {title} {' '.join(f'[#{pr}]({repo_url}/pull/{pr})' for pr in prs)}"
-        for title, prs in lines
-    )
-)
+
+def render_line(title, prs):
+    return f"- {title} {' '.join(render_link(number) for number in prs)}"
+
+
+def render_link(number):
+    return f"[#{number}]({repo_url}/pull/{number})"
+
+
+print("\n".join(render_line(title, prs) for title, prs in lines))
