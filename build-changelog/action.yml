@@ -36,10 +36,12 @@ runs:
 
     - id: next_release
       run: |
-        echo "release=$(python ${{ github.action_path }}/next_release.py)" >> $GITHUB_OUTPUT
+        echo "release=$(cat NEXT.md | python ${{ github.action_path }}/next_release.py)" >> $GITHUB_OUTPUT
       shell: bash
 
     - id: next_version
       run: |
-        echo "version=$(cat NEXT.md | python ${{ github.action_path }}/next_version.py ${{ steps.build_changelog.outputs.fromTag }} ${{ steps.next_release.outputs.release }})" >> $GITHUB_OUTPUT
+        echo "version=$(python ${{ github.action_path }}/next_version.py \
+          ${{ steps.build_changelog.outputs.fromTag }} \
+          ${{ steps.next_release.outputs.release }})" >> $GITHUB_OUTPUT
       shell: bash
