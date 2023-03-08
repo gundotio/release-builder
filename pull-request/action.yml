@@ -32,7 +32,6 @@ runs:
 
           ${{ inputs.notes }}
         author: GitHub <noreply@github.com>
-        base: master
         branch: release
         committer: GitHub <noreply@github.com>
         commit-message: |

@@ -197,7 +197,7 @@ def truncate_message(message, max_length=3000):
     extra_lines = []
 
     heading_anchor = f"{release['version']}-{release['date']}".replace(".", "")
-    changelog_url = f"{GITHUB_REPOSITORY_URL}/blob/master/CHANGELOG.md#{heading_anchor}"
+    changelog_url = f"{GITHUB_REPOSITORY_URL}/blob/HEAD/CHANGELOG.md#{heading_anchor}"
     more_line = ""
 
     while len("\n".join(message_lines)) > max_length - len(more_line):
