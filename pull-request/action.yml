@@ -31,11 +31,6 @@ runs:
           ## Release [${{ inputs.next_version }}](${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.previous_version }}...${{ steps.commit.outputs.short }})
 
           ${{ inputs.notes }}
-
-          <details>
-            <summary>View source</summary>
-            <pre><code>${{ inputs.notes }}</code></pre>
-          </details>
         author: GitHub <noreply@github.com>
         base: master
         branch: release
