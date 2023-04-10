@@ -24,7 +24,7 @@ runs:
     - id: commit
       uses: pr-mpt/actions-commit-hash@v2
 
-    - uses: peter-evans/create-pull-request@v4
+    - uses: peter-evans/create-pull-request@v5
       with:
         title: Release ${{ inputs.next_version }}
         body: |
