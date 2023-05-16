@@ -7,6 +7,7 @@ import sys
 
 GITHUB_ACTOR = os.environ.get("GITHUB_ACTOR", "")
 GITHUB_ACTOR_URL = f"https://github.com/{GITHUB_ACTOR}"
+GITHUB_ASSETS_URL = os.environ.get("GITHUB_ASSETS_URL", "")
 GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY", "")
 GITHUB_REPOSITORY_URL = f"https://github.com/{GITHUB_REPOSITORY}"
 GITHUB_RUN_ID = os.environ.get("GITHUB_RUN_ID", "")
@@ -121,13 +122,19 @@ def get_images(release):
         if not pull:
             continue
 
-        images.extend(
-            [
+        for text, url in find_images(pull["body"] or ""):
+            if "badge" in url:
+                continue
+
+            if url.startswith(GITHUB_REPOSITORY_URL):
+                if not GITHUB_ASSETS_URL:
+                    continue
+
+                url = url.replace(GITHUB_REPOSITORY_URL, GITHUB_ASSETS_URL)
+
+            images.append(
                 (f"{pull['title']} #{pull['number']}: {text}".strip(": "), url)
-                for text, url in find_images(pull["body"] or "")
-                if "badge" not in url
-            ]
-        )
+            )
 
     return images
 
