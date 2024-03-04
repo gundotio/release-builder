@@ -17,7 +17,7 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v5
 
     - run: pip install regex requests
       shell: bash
