@@ -12,46 +12,18 @@ inputs:
 
 runs:
   using: "composite"
-steps:
-  - run: |
-      echo "Starting script execution..."
-      
-      echo "Setting header prefix based on the release type..."
-      header_prefix="##"  # Default assuming non-patch release
-      if [[ "${{ inputs.release }}" == "patch" ]]; then
-        header_prefix="###"
-      fi
-      echo "Header Prefix: $header_prefix"
-
-      echo "Creating initial NEXT.md file with changelog header..."
-      echo -e "# Changelog\n" > NEXT.md
-      echo "Header written to NEXT.md"
-
-      echo "Appending commit guidelines link..."
-      echo -e "All notable changes to this project will be documented in this file. See [standard-version](${{ github.server_url }}/conventional-changelog/standard-version) for commit guidelines.\n" >> NEXT.md
-      echo "Link appended to NEXT.md"
-
-      date_cmd=$(date +'%Y-%m-%d')
-      echo "Date Command Output: $date_cmd"
-      
-      echo "Appending version and date information..."
-      echo -e "$header_prefix [${{ inputs.next_version }}](${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.previous_version }}...v${{ inputs.next_version }}) ($date_cmd)\n" >> NEXT.md
-      echo "Version and date appended."
-
-      echo "Appending release notes..."
-      echo -e "${{ inputs.notes }}\n" >> NEXT.md
-      echo "Release notes appended."
-
-      echo "Updating CHANGELOG.md with new data..."
-      cat CHANGELOG.md | sed -e '1,4d' >> NEXT.md
-      mv NEXT.md CHANGELOG.md
-      echo "CHANGELOG.md updated."
-
-      echo "Script execution completed."
-    shell: bash
+  steps:
+    - run: |
+        sanitized_notes=$(echo "${{ inputs.notes }}" | sed 's/"/\\"/g')
+        echo -e "# Changelog\n" > NEXT.md
+        echo -e "All notable changes to this project will be documented in this file. See [standard-version](${{ github.server_url }}/conventional-changelog/standard-version) for commit guidelines.\n" >> NEXT.md
+        echo -e "${{ inputs.release == 'patch' && '###' || '##' }} [${{ inputs.next_version }}](${{ github.server_url }}/${{ github.repository }}/compare/${{ inputs.previous_version }}...v${{ inputs.next_version }}) ($(date +'%Y-%m-%d'))\n" >> NEXT.md
+        echo -e "$sanitized_notes\n" >> NEXT.md
+        cat CHANGELOG.md | sed -e '1,4d' >> NEXT.md && mv NEXT.md CHANGELOG.md
+      shell: bash
 
     - id: commit
-      uses: pr-mpt/actions-commit-hash@v3
+      uses: pr-mpt/actions-commit-hash@v2
 
     - uses: peter-evans/create-pull-request@v6
       with:
